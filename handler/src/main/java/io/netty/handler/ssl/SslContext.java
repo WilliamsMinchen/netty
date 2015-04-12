@@ -815,7 +815,7 @@ public abstract class SslContext {
      *                    {@code null} if it's not password-protected.
      * @return generated {@link KeyStore}.
      */
-    protected static KeyStore buildKeyStore(File certChainFile, File keyFile, char[] keyPasswordChars)
+    static KeyStore buildKeyStore(File certChainFile, File keyFile, char[] keyPasswordChars)
             throws KeyStoreException, NoSuchAlgorithmException,
                    NoSuchPaddingException, InvalidKeySpecException, InvalidAlgorithmParameterException,
                    CertificateException, KeyException, IOException {
@@ -832,7 +832,11 @@ public abstract class SslContext {
             try {
                 key = KeyFactory.getInstance("DSA").generatePrivate(encodedKeySpec);
             } catch (InvalidKeySpecException ignore2) {
-                key = KeyFactory.getInstance("EC").generatePrivate(encodedKeySpec);
+                try {
+                    key = KeyFactory.getInstance("EC").generatePrivate(encodedKeySpec);
+                } catch (InvalidKeySpecException ignore3) {
+                    throw new InvalidKeySpecException("Neither RSA, DSA nor EC worked");
+                }
             }
         }
 
